@@ -1,0 +1,55 @@
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
+
+const variantClasses = {
+  primary:
+    'bg-brand-red text-text-light shadow-sm hover:bg-brand-red-light active:bg-brand-red-dark',
+  secondary:
+    'bg-navy text-text-light shadow-sm hover:bg-navy-light active:bg-navy-dark',
+  ghost:
+    'bg-transparent text-navy hover:bg-brand-cream-dark active:bg-brand-cream-darker',
+  danger:
+    'bg-brand-red text-text-light shadow-sm hover:bg-brand-red-light focus-visible:ring-brand-red',
+  success:
+    'bg-[var(--color-success)] text-text-light shadow-sm hover:brightness-105 active:brightness-95',
+} as const
+
+const sizeClasses = {
+  sm: 'h-8 min-h-[32px] px-3 text-sm',
+  md: 'h-11 min-h-[44px] px-5 text-base',
+  lg: 'h-14 min-h-[56px] px-8 text-lg',
+  full: 'h-11 min-h-[44px] w-full px-5 text-base',
+} as const
+
+export type ButtonVariant = keyof typeof variantClasses
+export type ButtonSize = keyof typeof sizeClasses
+
+export type ButtonProps = {
+  variant?: ButtonVariant
+  size?: ButtonSize
+  children: ReactNode
+  className?: string
+} & ButtonHTMLAttributes<HTMLButtonElement>
+
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className = '',
+  type = 'button',
+  children,
+  disabled,
+  ...rest
+}: ButtonProps) {
+  const base =
+    'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary disabled:pointer-events-none disabled:opacity-50'
+
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      className={`${base} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      {...rest}
+    >
+      {children}
+    </button>
+  )
+}

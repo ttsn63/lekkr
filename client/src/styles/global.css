@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Hauptfarben Koefteman (Tenant 1) */
+  --color-navy: #183052;
+  --color-navy-light: #1e3d6b;
+  --color-navy-dark: #0f1f35;
+  --color-red: #cc2a40;
+  --color-red-light: #e63350;
+  --color-red-dark: #b52236;
+  --color-mint: #62e6be;
+  --color-mint-light: #8eefd1;
+  --color-mint-dark: #3dd4a8;
+  --color-cream: #f5efe4;
+  --color-cream-dark: #ede4d4;
+  --color-cream-darker: #ddd3c0;
+
+  /* Semantische Farben */
+  --color-success: #1d9e75;
+  --color-warning: #f5a623;
+  --color-error: #cc2a40;
+
+  /* Text */
+  --color-text-primary: #1a1208;
+  --color-text-secondary: #7a6e60;
+  --color-text-light: #ffffff;
+
+  /* Hintergründe */
+  --color-bg-primary: #f5efe4;
+  --color-bg-secondary: #fffdf8;
+  --color-bg-dark: #183052;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+  --space-xl: 64px;
+
+  /* Radien */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 100px;
+
+  /* Schatten */
+  --shadow-sm: 0 2px 8px rgba(24, 48, 82, 0.06);
+  --shadow-md: 0 8px 24px rgba(24, 48, 82, 0.1);
+  --shadow-lg: 0 16px 48px rgba(24, 48, 82, 0.14);
+
+  /* Animationen */
+  --transition: all 0.2s ease;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply min-h-screen bg-bg-primary font-body text-text-primary antialiased;
+}
+
+#root {
+  @apply min-h-screen;
+}
