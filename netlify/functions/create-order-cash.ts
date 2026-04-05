@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions'
 import { validateCouponForOrder } from './_shared/coupon-validate'
+import { sendOrderConfirmationEmail } from './_shared/order-email'
 import {
   deductBuyerReferralCredit,
   loadOrderForPostPayment,
@@ -254,6 +255,8 @@ export const handler: Handler = async (event) => {
   await admin.from('cart_items').delete().eq('tenant_id', body.tenantId).eq('user_id', user.id)
 
   await runHellocashAfterOrder(admin, orderId)
+
+  await sendOrderConfirmationEmail(admin, orderId)
 
   return json(200, { ok: true, orderId })
 }

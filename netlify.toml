@@ -18,6 +18,13 @@
 # Funktionen: gemeinsame Umgebung (Secrets im Netlify UI unter Site → Environment)
 # STRIPE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, TWILIO_*, HELLOCASH_API_KEY
 
+# Geplante E-Mails (DSGVO: nur mit Einwilligung / berechtigtem Interesse dokumentieren)
+[functions.scheduled-birthday-emails]
+  schedule = "0 7 * * *"
+
+[functions.scheduled-inactivity-emails]
+  schedule = "0 9 * * 1"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

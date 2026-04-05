@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/Button'
 import { RequireKitchen } from '@/components/staff/RequireKitchen'
 import { useOrdersRealtime } from '@/hooks/useOrdersRealtime'
 import { useTenant } from '@/hooks/useTenant'
+import { notifyCustomerSms } from '@/lib/api/notifyCustomer'
 import {
   fetchKitchenOrders,
   updateOrderKitchenStatus,
   type KitchenOrderRow,
 } from '@/lib/queries/kitchenOrders'
+import { supabase } from '@/lib/supabase'
 import { unlockOrderAudio } from '@/lib/sound/playOrderBeep'
 
 const NEU = new Set(['new', 'confirmed'])
@@ -87,9 +89,17 @@ function KitchenBoardInner() {
   }, [qc, tenant.id])
 
   const moveMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
+    mutationFn: ({ id, status }: { id: string; status: string; type?: string }) =>
       updateOrderKitchenStatus(tenant.id, id, status),
-    onSuccess: invalidate,
+    onSuccess: async (_data, { id, status, type }) => {
+      invalidate()
+      if (status !== 'ready' || type !== 'pickup') return
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (token) {
+        await notifyCustomerSms(tenant.id, id, 'pickup_ready', token)
+      }
+    },
   })
 
   const neu = orders.filter((o) => NEU.has(o.status))
@@ -140,7 +150,7 @@ function KitchenBoardInner() {
                     type="button"
                     size="lg"
                     className="min-h-[52px] min-w-[140px] touch-manipulation"
-                    onClick={() => moveMut.mutate({ id: o.id, status: 'preparing' })}
+                    onClick={() => moveMut.mutate({ id: o.id, status: 'preparing', type: o.type })}
                     disabled={moveMut.isPending}
                   >
                     In Arbeit
@@ -164,7 +174,7 @@ function KitchenBoardInner() {
                     type="button"
                     size="lg"
                     className="min-h-[52px] min-w-[140px] touch-manipulation"
-                    onClick={() => moveMut.mutate({ id: o.id, status: 'ready' })}
+                    onClick={() => moveMut.mutate({ id: o.id, status: 'ready', type: o.type })}
                     disabled={moveMut.isPending}
                   >
                     Fertig
@@ -190,7 +200,7 @@ function KitchenBoardInner() {
                       size="lg"
                       variant="success"
                       className="min-h-[52px] touch-manipulation"
-                      onClick={() => moveMut.mutate({ id: o.id, status: 'delivered' })}
+                      onClick={() => moveMut.mutate({ id: o.id, status: 'delivered', type: o.type })}
                       disabled={moveMut.isPending}
                     >
                       Ausgegeben

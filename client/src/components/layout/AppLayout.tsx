@@ -82,7 +82,18 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       ) : null}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
       <footer className="mt-auto border-t border-brand-cream-dark bg-bg-secondary py-6 text-center text-sm text-text-secondary">
-        © {new Date().getFullYear()} Lekkr
+        <div className="mx-auto flex max-w-5xl flex-wrap justify-center gap-x-4 gap-y-2 px-4">
+          <Link href="/impressum" className="underline hover:text-navy">
+            Impressum
+          </Link>
+          <Link href="/datenschutz" className="underline hover:text-navy">
+            Datenschutz
+          </Link>
+          <Link href="/agb" className="underline hover:text-navy">
+            AGB
+          </Link>
+        </div>
+        <p className="mt-3">© {new Date().getFullYear()} Lekkr</p>
       </footer>
     </div>
   )

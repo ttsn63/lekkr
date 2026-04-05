@@ -99,20 +99,20 @@
 - [ ] Coupon ODER Referral – nicht beides Logik
 
 ## Woche 9 – Email, SMS & DSGVO
-- [ ] Resend Account verbinden
-- [ ] Bestellbestätigung Email Template
-- [ ] Double Opt-In Email Template
-- [ ] Willkommens Email Template
-- [ ] Geburtstags Email Template
-- [ ] Inaktivitäts Email Template
-- [ ] Twilio Account verbinden
-- [ ] SMS bei Abholbereit
-- [ ] SMS bei Fahrer unterwegs
-- [ ] Cookie Banner einbauen
-- [ ] Impressum Seite
-- [ ] Datenschutz Seite
-- [ ] AGB Seite
-- [ ] Account löschen Funktion
+- [x] Resend Account verbinden (RESEND_* in Netlify / `.env`, `resend-mail.ts`)
+- [x] Bestellbestätigung Email Template
+- [x] Double Opt-In Email Template
+- [x] Willkommens Email Template
+- [x] Geburtstags Email Template (scheduled + `marketing_consent`)
+- [x] Inaktivitäts Email Template (scheduled wöchentlich)
+- [x] Twilio Account verbinden (TWILIO_*)
+- [x] SMS bei Abholbereit
+- [x] SMS bei Fahrer unterwegs
+- [x] Cookie Banner einbauen
+- [x] Impressum Seite
+- [x] Datenschutz Seite
+- [x] AGB Seite
+- [x] Account löschen Funktion
 
 ## Woche 10 – Testen & Launch
 - [ ] Playwright Tests einrichten

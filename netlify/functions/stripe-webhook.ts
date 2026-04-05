@@ -6,6 +6,7 @@ import {
   rewardReferrerIfFirstPaidOrder,
   runHellocashAfterOrder,
 } from './_shared/referral-handlers'
+import { sendOrderConfirmationEmail } from './_shared/order-email'
 import { createSupabaseAdmin } from './_shared/supabase-admin'
 
 export const handler: Handler = async (event) => {
@@ -85,6 +86,8 @@ export const handler: Handler = async (event) => {
       }
 
       await runHellocashAfterOrder(admin, orderId)
+
+      await sendOrderConfirmationEmail(admin, orderId)
     }
   }
 

@@ -25,8 +25,10 @@ import { ProfilePage } from '@/pages/profile'
 import { TrackingPage } from '@/pages/tracking'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { CartSidebar } from '@/components/cart/CartSidebar'
+import { CookieBanner } from '@/components/legal/CookieBanner'
 import { useCartSync } from '@/hooks/useCartSync'
 import { useReferralCapture } from '@/hooks/useReferralCapture'
+import { LegalPage } from '@/pages/legal'
 
 function CartSyncHost() {
   useCartSync()
@@ -62,6 +64,7 @@ export default function App() {
     <>
       <CartSyncHost />
       <ReferralCaptureHost />
+      <CookieBanner />
       <Router>
       <Switch>
         <Route path="/" component={IndexPage} />
@@ -73,6 +76,9 @@ export default function App() {
         <Route path="/tracking" component={TrackingPage} />
         <Route path="/coupons" component={CouponsPage} />
         <Route path="/profile" component={ProfilePage} />
+        <Route path="/impressum" component={() => <LegalPage variant="impressum" />} />
+        <Route path="/datenschutz" component={() => <LegalPage variant="datenschutz" />} />
+        <Route path="/agb" component={() => <LegalPage variant="agb" />} />
         <Route path="/orders" component={OrdersPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/admin/login" component={AdminLoginPage} />

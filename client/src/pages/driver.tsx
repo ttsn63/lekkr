@@ -6,6 +6,7 @@ import { RequireDriver } from '@/components/staff/RequireDriver'
 import { useOrdersRealtime } from '@/hooks/useOrdersRealtime'
 import { useStaffRole } from '@/hooks/useStaffRole'
 import { useTenant } from '@/hooks/useTenant'
+import { notifyCustomerSms } from '@/lib/api/notifyCustomer'
 import {
   assignDriverToOrder,
   claimDeliveryOrder,
@@ -15,6 +16,7 @@ import {
   updateDriverGps,
   type DriverOrderRow,
 } from '@/lib/queries/driverOrders'
+import { supabase } from '@/lib/supabase'
 
 function formatAddr(addr: Record<string, unknown> | null): string {
   if (!addr || typeof addr !== 'object') return '—'
@@ -61,16 +63,28 @@ function DriverBoardInner() {
       if (!staff?.id) throw new Error('Session')
       return claimDeliveryOrder(tenant.id, orderId, staff.id)
     },
-    onSuccess: invalidate,
+    onSuccess: async (_data, orderId) => {
+      invalidate()
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (token) {
+        await notifyCustomerSms(tenant.id, orderId, 'driver_en_route', token)
+      }
+    },
   })
 
   const assignMut = useMutation({
     mutationFn: ({ orderId, driverId }: { orderId: string; driverId: string }) =>
       assignDriverToOrder(tenant.id, orderId, driverId),
-    onSuccess: () => {
+    onSuccess: async (_data, variables) => {
       invalidate()
       setAssignTarget(null)
       setAssignDriverId('')
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (token) {
+        await notifyCustomerSms(tenant.id, variables.orderId, 'driver_en_route', token)
+      }
     },
   })
 
