@@ -1,4 +1,4 @@
-import { Route, Router, Switch } from 'wouter'
+import { Route, Router, Switch, useLocation } from 'wouter'
 import { AdminCategoriesPage } from '@/pages/admin/categories'
 import { AdminCouponsPage } from '@/pages/admin/coupons'
 import { AdminCustomersPage } from '@/pages/admin/customers'
@@ -7,12 +7,14 @@ import { AdminLoginPage } from '@/pages/admin/login'
 import { AdminOrdersPage } from '@/pages/admin/orders'
 import { AdminProductsPage } from '@/pages/admin/products'
 import { AdminSettingsPage } from '@/pages/admin/settings'
+import { AdminTeamPage } from '@/pages/admin/team'
 import { AdminThemePage } from '@/pages/admin/theme'
 import { CartPage } from '@/pages/cart'
 import { CheckoutPage } from '@/pages/checkout'
 import { ConfirmationPage } from '@/pages/confirmation'
 import { CouponsPage } from '@/pages/coupons'
 import { DriverPage } from '@/pages/driver'
+import { InvitePage } from '@/pages/invite'
 import { IndexPage } from '@/pages/index'
 import { KitchenPage } from '@/pages/kitchen'
 import { LoginPage } from '@/pages/login'
@@ -28,6 +30,17 @@ import { useCartSync } from '@/hooks/useCartSync'
 function CartSyncHost() {
   useCartSync()
   return null
+}
+
+function CartSidebarGate() {
+  const [loc] = useLocation()
+  const hideCart =
+    loc.startsWith('/kitchen') ||
+    loc.startsWith('/driver') ||
+    loc.startsWith('/admin') ||
+    loc.startsWith('/invite')
+  if (hideCart) return null
+  return <CartSidebar />
 }
 
 function NotFoundPage() {
@@ -64,12 +77,14 @@ export default function App() {
         <Route path="/admin/customers" component={AdminCustomersPage} />
         <Route path="/admin/settings" component={AdminSettingsPage} />
         <Route path="/admin/theme" component={AdminThemePage} />
+        <Route path="/admin/team" component={AdminTeamPage} />
+        <Route path="/invite/:token" component={InvitePage} />
         <Route path="/kitchen" component={KitchenPage} />
         <Route path="/driver" component={DriverPage} />
         <Route component={NotFoundPage} />
       </Switch>
     </Router>
-      <CartSidebar />
+      <CartSidebarGate />
     </>
   )
 }

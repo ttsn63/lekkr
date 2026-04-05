@@ -63,16 +63,16 @@
 - [x] Bestellung ablehnen mit Begründung
 
 ## Woche 6 – Küche & Fahrer
-- [ ] Supabase Realtime aktivieren
-- [ ] Küchen-Display Seite
-- [ ] Kanban Board – Neu, In Arbeit, Fertig
-- [ ] Ton bei neuer Bestellung
-- [ ] Farbe wechselt bei langer Wartezeit
-- [ ] Touch-optimiert für Tablet
-- [ ] Fahrer-Dashboard Seite
-- [ ] Fahrer zuweisen zu Bestellung
-- [ ] GPS Status Update
-- [ ] Mitarbeiter Einladungs-System
+- [x] Supabase Realtime aktivieren
+- [x] Küchen-Display Seite
+- [x] Kanban Board – Neu, In Arbeit, Fertig
+- [x] Ton bei neuer Bestellung
+- [x] Farbe wechselt bei langer Wartezeit
+- [x] Touch-optimiert für Tablet
+- [x] Fahrer-Dashboard Seite
+- [x] Fahrer zuweisen zu Bestellung
+- [x] GPS Status Update
+- [x] Mitarbeiter Einladungs-System
 
 ## Woche 7 – Coupons
 - [ ] Supabase Tabellen – coupons, coupon_usages
