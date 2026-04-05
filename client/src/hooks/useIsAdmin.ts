@@ -24,26 +24,40 @@ export function useIsAdmin(tenantId: string) {
     queryFn: async (): Promise<AdminCheck> => {
       if (!uid) return { ok: false, reason: 'no-session' }
 
-      const { data, error } = await supabase
+      // Serverseitig (SECURITY DEFINER): gleiche Logik wie Migration, unabhängig von RLS/Spalten-Caching.
+      const { data: isAdmin, error: rpcErr } = await supabase.rpc('is_tenant_admin', {
+        p_tenant_id: tenantId,
+      })
+
+      if (rpcErr) {
+        // Fallback, falls Migration noch nicht ausgerollt (ältere DB)
+        const { data, error } = await supabase
+          .from('users')
+          .select('role, tenant_id')
+          .eq('id', uid)
+          .maybeSingle()
+        if (error) throw error
+        if (!data) return { ok: false, reason: 'no-profile' }
+        const roleOk = String(data.role ?? '')
+          .trim()
+          .toLowerCase() === 'admin'
+        const rowTenant = data.tenant_id as string | null
+        const tenantOk = rowTenant == null || rowTenant === tenantId
+        return roleOk && tenantOk
+          ? { ok: true, reason: 'ok' }
+          : { ok: false, reason: 'not-admin' }
+      }
+
+      if (isAdmin === true) return { ok: true, reason: 'ok' }
+
+      // RPC sagt nein: Zeile fehlt, falsche Rolle oder falscher Mandant
+      const { data: row } = await supabase
         .from('users')
-        .select('role, tenant_id')
+        .select('id')
         .eq('id', uid)
         .maybeSingle()
-
-      if (error) throw error
-      if (!data) return { ok: false, reason: 'no-profile' }
-
-      if (data.role !== 'admin') {
-        return { ok: false, reason: 'not-admin' }
-      }
-
-      const rowTenant = data.tenant_id as string | null
-      const tenantOk = rowTenant == null || rowTenant === tenantId
-      if (!tenantOk) {
-        return { ok: false, reason: 'not-admin' }
-      }
-
-      return { ok: true, reason: 'ok' }
+      if (!row) return { ok: false, reason: 'no-profile' }
+      return { ok: false, reason: 'not-admin' }
     },
     enabled: Boolean(tenantId) && !authLoading && Boolean(uid),
     staleTime: 60_000,
