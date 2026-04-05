@@ -1,9 +1,53 @@
 import type { Handler } from '@netlify/functions'
+import Stripe from 'stripe'
+import { createSupabaseAdmin } from './_shared/supabase-admin'
 
-export const handler: Handler = async () => {
-  return {
-    statusCode: 501,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ok: false, message: 'Stripe Webhook – noch nicht implementiert' }),
+export const handler: Handler = async (event) => {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET
+  const stripeKey = process.env.STRIPE_SECRET_KEY
+  if (!secret || !stripeKey) {
+    return { statusCode: 500, body: 'Stripe Webhook nicht konfiguriert' }
   }
+
+  const stripe = new Stripe(stripeKey)
+  const sig = event.headers['stripe-signature']
+  if (!sig || !event.body) {
+    return { statusCode: 400, body: 'Missing signature or body' }
+  }
+
+  let evt: Stripe.Event
+  try {
+    evt = stripe.webhooks.constructEvent(event.body, sig, secret)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Invalid signature'
+    return { statusCode: 400, body: msg }
+  }
+
+  if (evt.type === 'checkout.session.completed') {
+    const session = evt.data.object as Stripe.Checkout.Session
+    const orderId = session.metadata?.order_id ?? session.client_reference_id
+    if (orderId) {
+      const admin = createSupabaseAdmin()
+      const pi = session.payment_intent
+      const piId = typeof pi === 'string' ? pi : pi?.id ?? null
+      await admin
+        .from('orders')
+        .update({
+          payment_status: 'paid',
+          stripe_payment_intent: piId,
+        })
+        .eq('id', orderId)
+
+      const { data: row } = await admin.from('orders').select('tenant_id, user_id').eq('id', orderId).single()
+      if (row?.tenant_id && row?.user_id) {
+        await admin
+          .from('cart_items')
+          .delete()
+          .eq('tenant_id', row.tenant_id as string)
+          .eq('user_id', row.user_id as string)
+      }
+    }
+  }
+
+  return { statusCode: 200, body: JSON.stringify({ received: true }) }
 }

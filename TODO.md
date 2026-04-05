@@ -37,18 +37,18 @@
 - [x] Mehrsprachigkeit – Deutsch, Türkisch, Englisch
 
 ## Woche 4 – Warenkorb & Checkout
-- [ ] Warenkorb Supabase Tabelle
-- [ ] Warenkorb Sidebar Komponente
-- [ ] Produkt hinzufügen / entfernen
-- [ ] Mengen ändern
-- [ ] Mindestbestellwert Fortschrittsbalken
-- [ ] Lieferung / Abholung Toggle
-- [ ] Stripe Account verbinden
-- [ ] Stripe Checkout einbauen
-- [ ] Apple Pay + Google Pay aktivieren
-- [ ] Bar bei Abholung Option
-- [ ] Trinkgeld Option
-- [ ] Bestellbestätigung Seite
+- [x] Warenkorb Supabase Tabelle
+- [x] Warenkorb Sidebar Komponente
+- [x] Produkt hinzufügen / entfernen
+- [x] Mengen ändern
+- [x] Mindestbestellwert Fortschrittsbalken
+- [x] Lieferung / Abholung Toggle
+- [x] Stripe Account verbinden
+- [x] Stripe Checkout einbauen
+- [x] Apple Pay + Google Pay aktivieren
+- [x] Bar bei Abholung Option
+- [x] Trinkgeld Option
+- [x] Bestellbestätigung Seite
 
 ## Woche 5 – Admin Bereich
 - [ ] Supabase Tabellen – orders, order_items, users

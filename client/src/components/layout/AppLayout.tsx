@@ -6,6 +6,7 @@ import { navLinkClass } from '@/components/layout/navStyles'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { useTenant } from '@/hooks/useTenant'
 import { useLocale } from '@/i18n/LocaleProvider'
+import { useCartStore } from '@/store/cartStore'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -17,6 +18,8 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { t } = useLocale()
   const { user, loading, signOut } = useAuthSession()
   const [, navigate] = useLocation()
+  const cartCount = useCartStore((s) => s.lines.reduce((a, l) => a + l.quantity, 0))
+  const toggleCart = useCartStore((s) => s.toggleSidebar)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -39,9 +42,14 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               <Link href="/menu" className={navLinkClass}>
                 {t('nav.menu')}
               </Link>
-              <Link href="/cart" className={navLinkClass}>
+              <Button type="button" variant="ghost" size="sm" onClick={toggleCart}>
                 {t('nav.cart')}
-              </Link>
+                {cartCount > 0 ? (
+                  <span className="ml-1 rounded-full bg-brand-red px-ds-xs py-ds-2xs text-ds-xs text-text-light">
+                    {cartCount}
+                  </span>
+                ) : null}
+              </Button>
               {loading ? (
                 <span className="text-sm text-text-secondary">{t('nav.loading')}</span>
               ) : user ? (

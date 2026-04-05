@@ -21,6 +21,7 @@ export function ProductPage() {
   const { locale, t } = useLocale()
   const { data: product, isLoading, error } = useProductQuery(tenant.id, productId)
   const add = useCartStore((s) => s.add)
+  const setSidebarOpen = useCartStore((s) => s.setSidebarOpen)
   const { toast } = useToast()
 
   if (!productId) {
@@ -90,6 +91,7 @@ export function ProductPage() {
               className="w-full sm:w-auto"
               onClick={() => {
                 add(product.id, 1)
+                setSidebarOpen(true)
                 toast({ message: t('product.addToCart'), variant: 'success' })
               }}
             >

@@ -20,6 +20,13 @@ import { ProductPage } from '@/pages/product'
 import { ProfilePage } from '@/pages/profile'
 import { TrackingPage } from '@/pages/tracking'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { CartSidebar } from '@/components/cart/CartSidebar'
+import { useCartSync } from '@/hooks/useCartSync'
+
+function CartSyncHost() {
+  useCartSync()
+  return null
+}
 
 function NotFoundPage() {
   return (
@@ -31,7 +38,9 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <Router>
+    <>
+      <CartSyncHost />
+      <Router>
       <Switch>
         <Route path="/" component={IndexPage} />
         <Route path="/menu" component={MenuPage} />
@@ -56,5 +65,7 @@ export default function App() {
         <Route component={NotFoundPage} />
       </Switch>
     </Router>
+      <CartSidebar />
+    </>
   )
 }
