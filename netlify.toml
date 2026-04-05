@@ -8,6 +8,13 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# WICHTIG – Frontend (Vite): Diese Variablen im Netlify UI setzen (Site → Environment variables),
+# sonst ist die Seite leer / useTenant wirft „VITE_DEFAULT_TENANT_ID fehlt“.
+# Gleiche Werte wie lokal in .env, mindestens:
+#   VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_DEFAULT_TENANT_ID,
+#   VITE_PUBLIC_SITE_URL=https://lekkr.netlify.app  (oder finale Domain)
+# Nach dem Setzen: „Clear cache and deploy site“, damit npm run build die Werte einbettet.
+
 # Funktionen: gemeinsame Umgebung (Secrets im Netlify UI unter Site → Environment)
 # STRIPE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, TWILIO_*, HELLOCASH_API_KEY
 
