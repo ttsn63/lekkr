@@ -1,7 +1,17 @@
 import type { Handler } from '@netlify/functions'
 import Stripe from 'stripe'
 import { validateCouponForOrder } from './_shared/coupon-validate'
+import {
+  deductBuyerReferralCredit,
+  loadOrderForPostPayment,
+  rewardReferrerIfFirstPaidOrder,
+  runHellocashAfterOrder,
+} from './_shared/referral-handlers'
 import { createSupabaseAdmin, verifyUserJwt } from './_shared/supabase-admin'
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100
+}
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -19,6 +29,8 @@ type Body = {
   deliveryAddress?: { street: string; city: string; zip: string; name?: string }
   couponCode?: string | null
   bundleProductIds?: string[] | null
+  /** € aus Empfehlungsguthaben; nicht zusammen mit Coupon */
+  referralCreditToUse?: number
 }
 
 function json(statusCode: number, body: unknown) {
@@ -114,11 +126,22 @@ export const handler: Handler = async (event) => {
     }
   }
 
+  const couponTrim = body.couponCode?.trim() ?? ''
+  const reqRefRaw = round2(Number(body.referralCreditToUse) || 0)
+  const wantsRef = reqRefRaw > 0
+
+  if (couponTrim && wantsRef) {
+    return json(400, {
+      ok: false,
+      error: 'Coupon und Empfehlungsguthaben nicht gleichzeitig möglich',
+    })
+  }
+
   const couponRes = await validateCouponForOrder(admin, {
     tenantId: body.tenantId,
     userId: user.id,
-    couponCode: body.couponCode,
-    bundleProductIds: body.bundleProductIds ?? null,
+    couponCode: wantsRef ? null : body.couponCode,
+    bundleProductIds: wantsRef ? null : body.bundleProductIds ?? null,
     lines: normalizedLines,
     productMap: priceMap,
   })
@@ -129,7 +152,33 @@ export const handler: Handler = async (event) => {
   const discountAmount = couponRes.discount
   const couponId = couponRes.coupon?.id ?? null
 
-  const total = Math.max(0, subtotal - discountAmount + deliveryFee + tipAmount)
+  let referralCreditApplied = 0
+  if (wantsRef) {
+    const { data: balRow, error: balErr } = await admin
+      .from('users')
+      .select('referral_credits')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (balErr) {
+      return json(400, { ok: false, error: balErr.message })
+    }
+    const balance = round2(Number(balRow?.referral_credits ?? 0))
+    const maxRedeem = round2(
+      Math.max(0, subtotal - discountAmount + deliveryFee + tipAmount),
+    )
+    referralCreditApplied = round2(Math.min(balance, reqRefRaw, maxRedeem))
+    if (referralCreditApplied <= 0) {
+      return json(400, {
+        ok: false,
+        error: 'Empfehlungsguthaben nicht einsetzbar (Betrag prüfen)',
+      })
+    }
+  }
+
+  const total = Math.max(
+    0,
+    subtotal - discountAmount - referralCreditApplied + deliveryFee + tipAmount,
+  )
   const totalCents = Math.round(total * 100)
   if (totalCents > 0 && totalCents < 50) {
     return json(400, { ok: false, error: 'Betrag zu niedrig (min. 0,50 € für Kartenzahlung)' })
@@ -160,6 +209,7 @@ export const handler: Handler = async (event) => {
       delivery_fee: deliveryFee,
       tip_amount: tipAmount,
       total,
+      referral_credit_used: referralCreditApplied,
       payment_method: 'card',
       payment_status: 'pending',
       delivery_address:
@@ -197,13 +247,25 @@ export const handler: Handler = async (event) => {
   }
 
   if (totalCents === 0) {
+    const zeroMethod =
+      referralCreditApplied > 0 && !couponId ? 'referral' : 'coupon'
+
     await admin
       .from('orders')
       .update({
         payment_status: 'paid',
-        payment_method: 'coupon',
+        payment_method: zeroMethod,
       })
       .eq('id', orderId)
+
+    const orderFull = await loadOrderForPostPayment(admin, orderId)
+    if (orderFull) {
+      const d = await deductBuyerReferralCredit(admin, orderFull)
+      if (!d.ok) {
+        console.error('[checkout] referral deduct', d.error)
+      }
+      await rewardReferrerIfFirstPaidOrder(admin, orderFull)
+    }
 
     if (couponId) {
       await admin.from('coupon_usages').insert({
@@ -216,6 +278,8 @@ export const handler: Handler = async (event) => {
     }
 
     await admin.from('cart_items').delete().eq('tenant_id', body.tenantId).eq('user_id', user.id)
+
+    await runHellocashAfterOrder(admin, orderId)
 
     return json(200, { ok: true, orderId, url: null, paidWithoutStripe: true })
   }

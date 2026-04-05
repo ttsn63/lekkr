@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useLocation } from 'wouter'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/Button'
@@ -28,6 +29,7 @@ export function CheckoutPage() {
   const couponCode = useCartStore((s) => s.couponCode)
   const bundleCouponProductIds = useCartStore((s) => s.bundleCouponProductIds)
   const setCouponCode = useCartStore((s) => s.setCouponCode)
+  const setBundleCouponProductIds = useCartStore((s) => s.setBundleCouponProductIds)
 
   const { data: products } = useProductsQuery(tenant.id)
   const { data: settings } = useTenantSettingsQuery(tenant.id)
@@ -40,6 +42,7 @@ export function CheckoutPage() {
   const [zip, setZip] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [referralEuro, setReferralEuro] = useState(0)
 
   const subtotal = useMemo(() => {
     if (!products?.length) return 0
@@ -47,13 +50,29 @@ export function CheckoutPage() {
     return lines.reduce((s, l) => s + (map.get(l.productId) ?? 0) * l.quantity, 0)
   }, [lines, products])
 
-  const { discount: previewDiscount, error: previewErr } = useCartDiscountPreview(
+  const { discount: previewDiscountRaw, error: previewErr } = useCartDiscountPreview(
     tenant.id,
     lines,
     products,
     couponCode,
     bundleCouponProductIds,
   )
+
+  const { data: refBalance = 0 } = useQuery({
+    queryKey: ['referral-balance', tenant.id, user?.id],
+    queryFn: async () => {
+      const { data, error: qErr } = await supabase
+        .from('users')
+        .select('referral_credits')
+        .eq('id', user!.id)
+        .maybeSingle()
+      if (qErr) throw qErr
+      return Number(data?.referral_credits ?? 0)
+    },
+    enabled: Boolean(user?.id),
+  })
+
+  const previewDiscount = referralEuro > 0 ? 0 : previewDiscountRaw
 
   const deliveryFee = useMemo(() => {
     if (orderType !== 'delivery' || !settings) return 0
@@ -63,7 +82,25 @@ export function CheckoutPage() {
     return fee
   }, [orderType, settings, subtotal])
 
-  const total = Math.max(0, subtotal - previewDiscount + deliveryFee + tip)
+  const appliedReferral = useMemo(() => {
+    if (referralEuro <= 0 || refBalance <= 0) return 0
+    const effectiveDisc = referralEuro > 0 ? 0 : previewDiscountRaw
+    const cap = Math.max(0, subtotal - effectiveDisc + deliveryFee + tip)
+    const raw = Math.min(refBalance, referralEuro, cap)
+    return Math.round(raw * 100) / 100
+  }, [
+    referralEuro,
+    refBalance,
+    subtotal,
+    previewDiscountRaw,
+    deliveryFee,
+    tip,
+  ])
+
+  const total = Math.max(
+    0,
+    subtotal - previewDiscount - appliedReferral + deliveryFee + tip,
+  )
 
   const minOrder = settings ? Number(settings.min_order_value) : 0
   const belowMin = subtotal < minOrder
@@ -91,8 +128,9 @@ export function CheckoutPage() {
           orderType === 'delivery'
             ? { street, city, zip }
             : undefined,
-        couponCode: couponCode ?? null,
-        bundleProductIds: bundleCouponProductIds ?? null,
+        couponCode: appliedReferral > 0 ? null : couponCode ?? null,
+        bundleProductIds: appliedReferral > 0 ? null : bundleCouponProductIds ?? null,
+        referralCreditToUse: appliedReferral > 0 ? appliedReferral : undefined,
       }
 
       if (payMethod === 'cash') {
@@ -260,7 +298,12 @@ export function CheckoutPage() {
                       <Input
                         className="flex-1 min-w-[160px]"
                         value={couponCode ?? ''}
-                        onChange={(e) => setCouponCode(e.target.value || null)}
+                        disabled={referralEuro > 0}
+                        onChange={(e) => {
+                          const v = e.target.value.trim() || null
+                          setCouponCode(v)
+                          if (v) setReferralEuro(0)
+                        }}
                         placeholder={t('coupons.codePlaceholder')}
                       />
                       {couponCode ? (
@@ -269,9 +312,11 @@ export function CheckoutPage() {
                         </Button>
                       ) : null}
                     </div>
-                    {previewDiscount > 0 ? (
+                    {referralEuro > 0 ? (
+                      <p className="mt-ds-xs text-ds-xs text-text-secondary">{t('checkout.referralExclusive')}</p>
+                    ) : previewDiscountRaw > 0 ? (
                       <p className="mt-ds-xs text-ds-xs text-[color:var(--color-success)]">
-                        {t('coupons.previewOk', { amount: previewDiscount.toFixed(2) })}
+                        {t('coupons.previewOk', { amount: previewDiscountRaw.toFixed(2) })}
                       </p>
                     ) : previewErr && couponCode ? (
                       <p className="mt-ds-xs text-ds-xs text-[color:var(--color-warning)]">
@@ -279,6 +324,31 @@ export function CheckoutPage() {
                       </p>
                     ) : null}
                   </div>
+                </div>
+
+                <div className="space-y-ds-md border-t border-brand-cream-dark pt-ds-md">
+                  <p className="text-ds-sm font-medium text-navy">{t('checkout.referralCredit')}</p>
+                  <p className="text-ds-xs text-text-secondary">{t('checkout.referralExclusive')}</p>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    disabled={Boolean(couponCode?.trim())}
+                    value={referralEuro > 0 ? referralEuro : ''}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      const n = raw === '' ? 0 : Math.max(0, Number(raw.replace(',', '.')) || 0)
+                      setReferralEuro(n)
+                      if (n > 0) {
+                        setCouponCode(null)
+                        setBundleCouponProductIds(null)
+                      }
+                    }}
+                    placeholder="0"
+                  />
+                  <p className="text-ds-xs text-text-secondary">
+                    {t('checkout.referralMax', { amount: refBalance.toFixed(2) })}
+                  </p>
                 </div>
 
                 <div className="space-y-ds-xs border-t border-brand-cream-dark pt-ds-md text-ds-sm">
@@ -290,6 +360,12 @@ export function CheckoutPage() {
                     <div className="flex justify-between text-[color:var(--color-success)]">
                       <span>{t('coupons.discount')}</span>
                       <span>− {formatEur(locale, previewDiscount)}</span>
+                    </div>
+                  ) : null}
+                  {appliedReferral > 0 ? (
+                    <div className="flex justify-between text-[color:var(--color-success)]">
+                      <span>{t('profile.referralBalance')}</span>
+                      <span>− {formatEur(locale, appliedReferral)}</span>
                     </div>
                   ) : null}
                   {orderType === 'delivery' ? (

@@ -1,5 +1,11 @@
 import type { Handler } from '@netlify/functions'
 import Stripe from 'stripe'
+import {
+  deductBuyerReferralCredit,
+  loadOrderForPostPayment,
+  rewardReferrerIfFirstPaidOrder,
+  runHellocashAfterOrder,
+} from './_shared/referral-handlers'
 import { createSupabaseAdmin } from './_shared/supabase-admin'
 
 export const handler: Handler = async (event) => {
@@ -52,6 +58,15 @@ export const handler: Handler = async (event) => {
           .eq('user_id', row.user_id as string)
       }
 
+      const orderFull = await loadOrderForPostPayment(admin, orderId)
+      if (orderFull) {
+        const d = await deductBuyerReferralCredit(admin, orderFull)
+        if (!d.ok) {
+          console.error('[stripe-webhook] referral deduct', d.error)
+        }
+        await rewardReferrerIfFirstPaidOrder(admin, orderFull)
+      }
+
       if (row?.coupon_id && row.user_id) {
         const { data: existingUsage } = await admin
           .from('coupon_usages')
@@ -68,6 +83,8 @@ export const handler: Handler = async (event) => {
           })
         }
       }
+
+      await runHellocashAfterOrder(admin, orderId)
     }
   }
 

@@ -26,9 +26,15 @@ import { TrackingPage } from '@/pages/tracking'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { CartSidebar } from '@/components/cart/CartSidebar'
 import { useCartSync } from '@/hooks/useCartSync'
+import { useReferralCapture } from '@/hooks/useReferralCapture'
 
 function CartSyncHost() {
   useCartSync()
+  return null
+}
+
+function ReferralCaptureHost() {
+  useReferralCapture()
   return null
 }
 
@@ -55,6 +61,7 @@ export default function App() {
   return (
     <>
       <CartSyncHost />
+      <ReferralCaptureHost />
       <Router>
       <Switch>
         <Route path="/" component={IndexPage} />
