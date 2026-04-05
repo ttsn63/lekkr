@@ -42,6 +42,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               <Link href="/menu" className={navLinkClass}>
                 {t('nav.menu')}
               </Link>
+              <Link href="/coupons" className={navLinkClass}>
+                {t('nav.coupons')}
+              </Link>
               <Button type="button" variant="ghost" size="sm" onClick={toggleCart}>
                 {t('nav.cart')}
                 {cartCount > 0 ? (

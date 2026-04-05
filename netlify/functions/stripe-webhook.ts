@@ -38,13 +38,35 @@ export const handler: Handler = async (event) => {
         })
         .eq('id', orderId)
 
-      const { data: row } = await admin.from('orders').select('tenant_id, user_id').eq('id', orderId).single()
+      const { data: row } = await admin
+        .from('orders')
+        .select('tenant_id, user_id, coupon_id, discount_amount')
+        .eq('id', orderId)
+        .single()
+
       if (row?.tenant_id && row?.user_id) {
         await admin
           .from('cart_items')
           .delete()
           .eq('tenant_id', row.tenant_id as string)
           .eq('user_id', row.user_id as string)
+      }
+
+      if (row?.coupon_id && row.user_id) {
+        const { data: existingUsage } = await admin
+          .from('coupon_usages')
+          .select('id')
+          .eq('order_id', orderId)
+          .maybeSingle()
+        if (!existingUsage) {
+          await admin.from('coupon_usages').insert({
+            tenant_id: row.tenant_id as string,
+            coupon_id: row.coupon_id as string,
+            order_id: orderId,
+            user_id: row.user_id as string,
+            discount_amount: Number(row.discount_amount ?? 0),
+          })
+        }
       }
     }
   }

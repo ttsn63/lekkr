@@ -8,6 +8,7 @@ import { useTenant } from '@/hooks/useTenant'
 import { useLocale } from '@/i18n/LocaleProvider'
 import { pickLocalizedName } from '@/i18n/localized'
 import { formatEur } from '@/lib/format'
+import { useCartDiscountPreview } from '@/hooks/useCartDiscountPreview'
 import { useCartStore } from '@/store/cartStore'
 
 export function CartSidebar() {
@@ -19,6 +20,9 @@ export function CartSidebar() {
   const lines = useCartStore((s) => s.lines)
   const setQuantity = useCartStore((s) => s.setQuantity)
   const remove = useCartStore((s) => s.remove)
+  const couponCode = useCartStore((s) => s.couponCode)
+  const bundleCouponProductIds = useCartStore((s) => s.bundleCouponProductIds)
+  const setCouponCode = useCartStore((s) => s.setCouponCode)
 
   const { data: products } = useProductsQuery(tenant.id)
   const { data: settings } = useTenantSettingsQuery(tenant.id)
@@ -40,6 +44,14 @@ export function CartSidebar() {
   const subtotal = useMemo(() => {
     return linesWithProducts.reduce((s, x) => s + Number(x.product.price) * x.line.quantity, 0)
   }, [linesWithProducts])
+
+  const { discount: previewDiscount } = useCartDiscountPreview(
+    tenant.id,
+    lines,
+    products,
+    couponCode,
+    bundleCouponProductIds,
+  )
 
   if (!sidebarOpen) return null
 
@@ -121,6 +133,13 @@ export function CartSidebar() {
           >
             {t('cart.pageLink')}
           </Link>
+          <Link
+            href="/coupons"
+            className="block text-center text-ds-xs font-medium text-navy underline"
+            onClick={() => setSidebarOpen(false)}
+          >
+            {t('nav.coupons')}
+          </Link>
           {settings && lines.length > 0 ? (
             <MinOrderProgress
               lines={lines}
@@ -132,6 +151,26 @@ export function CartSidebar() {
             <span>{t('cart.subtotal')}</span>
             <span>{formatEur(locale, subtotal)}</span>
           </div>
+          {couponCode ? (
+            <div className="flex flex-wrap items-center justify-between gap-ds-sm text-ds-sm">
+              <span className="text-text-secondary">
+                {t('coupons.active')}: <span className="font-mono font-medium text-navy">{couponCode}</span>
+              </span>
+              <button
+                type="button"
+                className="text-ds-xs text-[color:var(--color-error)] underline"
+                onClick={() => setCouponCode(null)}
+              >
+                {t('coupons.remove')}
+              </button>
+            </div>
+          ) : null}
+          {previewDiscount > 0 ? (
+            <div className="flex justify-between text-ds-sm text-[color:var(--color-success)]">
+              <span>{t('coupons.discount')}</span>
+              <span>− {formatEur(locale, previewDiscount)}</span>
+            </div>
+          ) : null}
           <Button
             type="button"
             size="full"

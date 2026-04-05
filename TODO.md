@@ -75,16 +75,16 @@
 - [x] Mitarbeiter Einladungs-System
 
 ## Woche 7 – Coupons
-- [ ] Supabase Tabellen – coupons, coupon_usages
-- [ ] Coupon-Builder im Admin
-- [ ] Coupon Typen – Prozent, Fix, Bundle, Gratis
-- [ ] Coupons-Seite für Kunden
-- [ ] Coupon-Karte Komponente
-- [ ] Coupon-Konfigurator – Kunde wählt Produkte
-- [ ] Coupon Validierung im Checkout
-- [ ] Coupon im Warenkorb anzeigen
-- [ ] Coupon Statistiken im Admin
-- [ ] Geburtstags-Coupon automatisch
+- [x] Supabase Tabellen – coupons, coupon_usages
+- [x] Coupon-Builder im Admin
+- [x] Coupon Typen – Prozent, Fix, Bundle, Gratis
+- [x] Coupons-Seite für Kunden
+- [x] Coupon-Karte Komponente
+- [x] Coupon-Konfigurator – Kunde wählt Produkte
+- [x] Coupon Validierung im Checkout
+- [x] Coupon im Warenkorb anzeigen
+- [x] Coupon Statistiken im Admin
+- [x] Geburtstags-Coupon automatisch
 
 ## Woche 8 – helloCash & Referral
 - [ ] Supabase Tabellen – referrals, referral_credits

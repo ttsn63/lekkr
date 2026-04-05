@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions'
 import Stripe from 'stripe'
+import { validateCouponForOrder } from './_shared/coupon-validate'
 import { createSupabaseAdmin, verifyUserJwt } from './_shared/supabase-admin'
 
 const cors = {
@@ -16,6 +17,8 @@ type Body = {
   orderType: 'delivery' | 'pickup'
   tipAmount: number
   deliveryAddress?: { street: string; city: string; zip: string; name?: string }
+  couponCode?: string | null
+  bundleProductIds?: string[] | null
 }
 
 function json(statusCode: number, body: unknown) {
@@ -83,11 +86,16 @@ export const handler: Handler = async (event) => {
   }
 
   const productMap = new Map(products.map((p) => [p.id as string, p]))
+  const priceMap = new Map(
+    products.map((p) => [p.id as string, { price: Number(p.price) }]),
+  )
   let subtotal = 0
+  const normalizedLines: LineInput[] = []
   for (const line of body.lines) {
     const p = productMap.get(line.productId)
     if (!p) return json(400, { ok: false, error: `Produkt ${line.productId}` })
     const qty = Math.min(99, Math.max(1, Math.floor(line.quantity)))
+    normalizedLines.push({ productId: line.productId, quantity: qty })
     subtotal += Number(p.price) * qty
   }
 
@@ -106,10 +114,25 @@ export const handler: Handler = async (event) => {
     }
   }
 
-  const total = subtotal + deliveryFee + tipAmount
+  const couponRes = await validateCouponForOrder(admin, {
+    tenantId: body.tenantId,
+    userId: user.id,
+    couponCode: body.couponCode,
+    bundleProductIds: body.bundleProductIds ?? null,
+    lines: normalizedLines,
+    productMap: priceMap,
+  })
+  if (!couponRes.ok) {
+    return json(400, { ok: false, error: couponRes.error })
+  }
+
+  const discountAmount = couponRes.discount
+  const couponId = couponRes.coupon?.id ?? null
+
+  const total = Math.max(0, subtotal - discountAmount + deliveryFee + tipAmount)
   const totalCents = Math.round(total * 100)
-  if (totalCents < 50) {
-    return json(400, { ok: false, error: 'Betrag zu niedrig' })
+  if (totalCents > 0 && totalCents < 50) {
+    return json(400, { ok: false, error: 'Betrag zu niedrig (min. 0,50 € für Kartenzahlung)' })
   }
 
   await admin.from('users').upsert(
@@ -132,7 +155,8 @@ export const handler: Handler = async (event) => {
       type: orderType,
       status: 'new',
       subtotal,
-      discount_amount: 0,
+      discount_amount: discountAmount,
+      coupon_id: couponId,
       delivery_fee: deliveryFee,
       tip_amount: tipAmount,
       total,
@@ -152,9 +176,9 @@ export const handler: Handler = async (event) => {
 
   const orderId = orderRow.id as string
 
-  const orderItems = body.lines.map((line) => {
+  const orderItems = normalizedLines.map((line) => {
     const p = productMap.get(line.productId)!
-    const qty = Math.min(99, Math.max(1, Math.floor(line.quantity)))
+    const qty = line.quantity
     const unit = Number(p.price)
     return {
       tenant_id: body.tenantId,
@@ -170,6 +194,30 @@ export const handler: Handler = async (event) => {
   if (oiErr) {
     await admin.from('orders').delete().eq('id', orderId)
     return json(500, { ok: false, error: oiErr.message })
+  }
+
+  if (totalCents === 0) {
+    await admin
+      .from('orders')
+      .update({
+        payment_status: 'paid',
+        payment_method: 'coupon',
+      })
+      .eq('id', orderId)
+
+    if (couponId) {
+      await admin.from('coupon_usages').insert({
+        tenant_id: body.tenantId,
+        coupon_id: couponId,
+        order_id: orderId,
+        user_id: user.id,
+        discount_amount: discountAmount,
+      })
+    }
+
+    await admin.from('cart_items').delete().eq('tenant_id', body.tenantId).eq('user_id', user.id)
+
+    return json(200, { ok: true, orderId, url: null, paidWithoutStripe: true })
   }
 
   const stripe = new Stripe(stripeKey)

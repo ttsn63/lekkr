@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions'
+import { validateCouponForOrder } from './_shared/coupon-validate'
 import { createSupabaseAdmin, verifyUserJwt } from './_shared/supabase-admin'
 
 const cors = {
@@ -15,6 +16,8 @@ type Body = {
   orderType: 'delivery' | 'pickup'
   tipAmount: number
   deliveryAddress?: { street: string; city: string; zip: string; name?: string }
+  couponCode?: string | null
+  bundleProductIds?: string[] | null
 }
 
 function json(statusCode: number, body: unknown) {
@@ -81,11 +84,16 @@ export const handler: Handler = async (event) => {
   }
 
   const productMap = new Map(products.map((p) => [p.id as string, p]))
+  const priceMap = new Map(
+    products.map((p) => [p.id as string, { price: Number(p.price) }]),
+  )
   let subtotal = 0
+  const normalizedLines: LineInput[] = []
   for (const line of body.lines) {
     const p = productMap.get(line.productId)
     if (!p) return json(400, { ok: false, error: `Produkt ${line.productId}` })
     const qty = Math.min(99, Math.max(1, Math.floor(line.quantity)))
+    normalizedLines.push({ productId: line.productId, quantity: qty })
     subtotal += Number(p.price) * qty
   }
 
@@ -94,8 +102,23 @@ export const handler: Handler = async (event) => {
     return json(400, { ok: false, error: `Mindestbestellwert ${minOrder.toFixed(2)} €` })
   }
 
+  const couponRes = await validateCouponForOrder(admin, {
+    tenantId: body.tenantId,
+    userId: user.id,
+    couponCode: body.couponCode,
+    bundleProductIds: body.bundleProductIds ?? null,
+    lines: normalizedLines,
+    productMap: priceMap,
+  })
+  if (!couponRes.ok) {
+    return json(400, { ok: false, error: couponRes.error })
+  }
+
+  const discountAmount = couponRes.discount
+  const couponId = couponRes.coupon?.id ?? null
+
   const deliveryFee = 0
-  const total = subtotal + deliveryFee + tipAmount
+  const total = Math.max(0, subtotal - discountAmount + deliveryFee + tipAmount)
 
   await admin.from('users').upsert(
     {
@@ -117,7 +140,8 @@ export const handler: Handler = async (event) => {
       type: 'pickup',
       status: 'new',
       subtotal,
-      discount_amount: 0,
+      discount_amount: discountAmount,
+      coupon_id: couponId,
       delivery_fee: 0,
       tip_amount: tipAmount,
       total,
@@ -134,9 +158,9 @@ export const handler: Handler = async (event) => {
 
   const orderId = orderRow.id as string
 
-  const orderItems = body.lines.map((line) => {
+  const orderItems = normalizedLines.map((line) => {
     const p = productMap.get(line.productId)!
-    const qty = Math.min(99, Math.max(1, Math.floor(line.quantity)))
+    const qty = line.quantity
     const unit = Number(p.price)
     return {
       tenant_id: body.tenantId,
@@ -152,6 +176,21 @@ export const handler: Handler = async (event) => {
   if (oiErr) {
     await admin.from('orders').delete().eq('id', orderId)
     return json(500, { ok: false, error: oiErr.message })
+  }
+
+  if (couponId) {
+    const { error: cuErr } = await admin.from('coupon_usages').insert({
+      tenant_id: body.tenantId,
+      coupon_id: couponId,
+      order_id: orderId,
+      user_id: user.id,
+      discount_amount: discountAmount,
+    })
+    if (cuErr) {
+      await admin.from('order_items').delete().eq('order_id', orderId)
+      await admin.from('orders').delete().eq('id', orderId)
+      return json(500, { ok: false, error: cuErr.message })
+    }
   }
 
   await admin.from('cart_items').delete().eq('tenant_id', body.tenantId).eq('user_id', user.id)

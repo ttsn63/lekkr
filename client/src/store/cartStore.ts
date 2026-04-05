@@ -8,12 +8,18 @@ export type CartLine = {
 
 type CartState = {
   lines: CartLine[]
+  /** Normaler Coupon-Code (Großbuchstaben empfohlen) */
+  couponCode: string | null
+  /** Produkt-IDs für Bundle-Coupons (Auswahl im Konfigurator) */
+  bundleCouponProductIds: string[] | null
   sidebarOpen: boolean
   lastTenantId: string | null
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
   setLines: (lines: CartLine[]) => void
   setLastTenantId: (id: string | null) => void
+  setCouponCode: (code: string | null) => void
+  setBundleCouponProductIds: (ids: string[] | null) => void
   add: (productId: string, quantity?: number) => void
   setQuantity: (productId: string, quantity: number) => void
   remove: (productId: string) => void
@@ -24,12 +30,16 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       lines: [],
+      couponCode: null,
+      bundleCouponProductIds: null,
       sidebarOpen: false,
       lastTenantId: null,
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
       setLines: (lines) => set({ lines }),
       setLastTenantId: (id) => set({ lastTenantId: id }),
+      setCouponCode: (code) => set({ couponCode: code?.trim() || null }),
+      setBundleCouponProductIds: (ids) => set({ bundleCouponProductIds: ids }),
       add: (productId, quantity = 1) => {
         const lines = [...get().lines]
         const i = lines.findIndex((l) => l.productId === productId)
@@ -53,11 +63,16 @@ export const useCartStore = create<CartState>()(
       remove: (productId) => {
         set({ lines: get().lines.filter((l) => l.productId !== productId) })
       },
-      clear: () => set({ lines: [] }),
+      clear: () => set({ lines: [], couponCode: null, bundleCouponProductIds: null }),
     }),
     {
       name: 'lekkr-cart-v2',
-      partialize: (s) => ({ lines: s.lines, lastTenantId: s.lastTenantId }),
+      partialize: (s) => ({
+        lines: s.lines,
+        lastTenantId: s.lastTenantId,
+        couponCode: s.couponCode,
+        bundleCouponProductIds: s.bundleCouponProductIds,
+      }),
     },
   ),
 )

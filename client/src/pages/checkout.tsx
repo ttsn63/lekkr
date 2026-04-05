@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { useCartDiscountPreview } from '@/hooks/useCartDiscountPreview'
 import { useProductsQuery } from '@/hooks/useCatalogQueries'
 import { useTenantSettingsQuery } from '@/hooks/useTenantSettingsQuery'
 import { useTenant } from '@/hooks/useTenant'
@@ -24,6 +25,9 @@ export function CheckoutPage() {
   const [, navigate] = useLocation()
   const lines = useCartStore((s) => s.lines)
   const clear = useCartStore((s) => s.clear)
+  const couponCode = useCartStore((s) => s.couponCode)
+  const bundleCouponProductIds = useCartStore((s) => s.bundleCouponProductIds)
+  const setCouponCode = useCartStore((s) => s.setCouponCode)
 
   const { data: products } = useProductsQuery(tenant.id)
   const { data: settings } = useTenantSettingsQuery(tenant.id)
@@ -43,6 +47,14 @@ export function CheckoutPage() {
     return lines.reduce((s, l) => s + (map.get(l.productId) ?? 0) * l.quantity, 0)
   }, [lines, products])
 
+  const { discount: previewDiscount, error: previewErr } = useCartDiscountPreview(
+    tenant.id,
+    lines,
+    products,
+    couponCode,
+    bundleCouponProductIds,
+  )
+
   const deliveryFee = useMemo(() => {
     if (orderType !== 'delivery' || !settings) return 0
     const fee = Number(settings.delivery_fee)
@@ -51,7 +63,7 @@ export function CheckoutPage() {
     return fee
   }, [orderType, settings, subtotal])
 
-  const total = subtotal + deliveryFee + tip
+  const total = Math.max(0, subtotal - previewDiscount + deliveryFee + tip)
 
   const minOrder = settings ? Number(settings.min_order_value) : 0
   const belowMin = subtotal < minOrder
@@ -79,6 +91,8 @@ export function CheckoutPage() {
           orderType === 'delivery'
             ? { street, city, zip }
             : undefined,
+        couponCode: couponCode ?? null,
+        bundleProductIds: bundleCouponProductIds ?? null,
       }
 
       if (payMethod === 'cash') {
@@ -94,9 +108,24 @@ export function CheckoutPage() {
       }
 
       const res = await postNetlifyFunction('create-checkout-session', payload, token)
-      const json = (await res.json()) as { ok?: boolean; url?: string; error?: string }
-      if (!res.ok || !json.ok || !json.url) {
+      const json = (await res.json()) as {
+        ok?: boolean
+        url?: string | null
+        orderId?: string
+        paidWithoutStripe?: boolean
+        error?: string
+      }
+      if (!res.ok || !json.ok) {
         setError(json.error ?? t('checkout.error'))
+        return
+      }
+      if (json.paidWithoutStripe && json.orderId) {
+        clear()
+        navigate(`/confirmation?order=${json.orderId}`)
+        return
+      }
+      if (!json.url) {
+        setError(t('checkout.error'))
         return
       }
       window.location.href = json.url
@@ -224,11 +253,45 @@ export function CheckoutPage() {
                   ) : null}
                 </div>
 
+                <div className="space-y-ds-md border-t border-brand-cream-dark pt-ds-md">
+                  <div>
+                    <p className="text-ds-sm font-medium text-navy">{t('coupons.codeLabel')}</p>
+                    <div className="mt-ds-sm flex flex-wrap gap-ds-sm">
+                      <Input
+                        className="flex-1 min-w-[160px]"
+                        value={couponCode ?? ''}
+                        onChange={(e) => setCouponCode(e.target.value || null)}
+                        placeholder={t('coupons.codePlaceholder')}
+                      />
+                      {couponCode ? (
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setCouponCode(null)}>
+                          {t('coupons.remove')}
+                        </Button>
+                      ) : null}
+                    </div>
+                    {previewDiscount > 0 ? (
+                      <p className="mt-ds-xs text-ds-xs text-[color:var(--color-success)]">
+                        {t('coupons.previewOk', { amount: previewDiscount.toFixed(2) })}
+                      </p>
+                    ) : previewErr && couponCode ? (
+                      <p className="mt-ds-xs text-ds-xs text-[color:var(--color-warning)]">
+                        {t('coupons.previewBad')}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
                 <div className="space-y-ds-xs border-t border-brand-cream-dark pt-ds-md text-ds-sm">
                   <div className="flex justify-between">
                     <span>{t('cart.subtotal')}</span>
                     <span>{formatEur(locale, subtotal)}</span>
                   </div>
+                  {previewDiscount > 0 ? (
+                    <div className="flex justify-between text-[color:var(--color-success)]">
+                      <span>{t('coupons.discount')}</span>
+                      <span>− {formatEur(locale, previewDiscount)}</span>
+                    </div>
+                  ) : null}
                   {orderType === 'delivery' ? (
                     <div className="flex justify-between">
                       <span>{t('checkout.delivery')}</span>
