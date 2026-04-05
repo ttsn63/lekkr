@@ -6,4 +6,9 @@ dist
 .env.*.local
 coverage
 *.tsbuildinfo
+playwright-report
+test-results
+blob-report
+lighthouse-report.html
+.lighthouseci
 node_modules/.tmp

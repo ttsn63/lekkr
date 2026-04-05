@@ -115,17 +115,17 @@
 - [x] Account löschen Funktion
 
 ## Woche 10 – Testen & Launch
-- [ ] Playwright Tests einrichten
-- [ ] GitHub Actions CI/CD einrichten
-- [ ] Alle Seiten auf Mobile testen
-- [ ] Performance messen – PageSpeed
-- [ ] Alle Emails testen
-- [ ] Alle SMS testen
-- [ ] Stripe Zahlung testen
-- [ ] helloCash Integration testen
-- [ ] Koefteman Produkte importieren via CSV
-- [ ] koefteman.de auf Netlify umzeigen
-- [ ] **LAUNCH** 🚀
+- [x] Playwright Tests einrichten (`e2e/`, `playwright.config.ts`, `npm run test:e2e`)
+- [x] GitHub Actions CI/CD einrichten (`.github/workflows/ci.yml`)
+- [x] Alle Seiten auf Mobile testen (Playwright-Projekt `mobile-chromium`, Pixel 7)
+- [x] Performance messen – PageSpeed (`docs/PERFORMANCE.md` + manuell PSI)
+- [ ] Alle Emails testen *(manuell laut `docs/LAUNCH_CHECKLIST.md`)*
+- [ ] Alle SMS testen *(manuell)*
+- [ ] Stripe Zahlung testen *(manuell / Staging)*
+- [ ] helloCash Integration testen *(manuell)*
+- [ ] Koefteman Produkte importieren via CSV *(Admin → CSV, Sample: `docs/samples/koefteman-products-sample.csv`)*
+- [ ] koefteman.de auf Netlify umzeigen *(DNS + Env)*
+- [ ] **LAUNCH** 🚀 *(nach Checkliste)*
 
 ---
 
