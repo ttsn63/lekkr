@@ -13,16 +13,16 @@
 - [ ] Double Opt-In in Supabase aktivieren
 
 ## Woche 2 – Design System
-- [ ] Globale Farben als CSS Variablen definieren
-- [ ] Playfair Display + DM Sans Fonts einbinden
-- [ ] Button Komponente bauen – 5 Typen
-- [ ] Button Größen – SM, MD, LG, FULL
-- [ ] Input Komponente global
-- [ ] Card Komponente global
-- [ ] Modal Komponente global
-- [ ] Toast Benachrichtigung global
-- [ ] Spacing System definieren
-- [ ] Schatten System definieren
+- [x] Globale Farben als CSS Variablen definieren
+- [x] Playfair Display + DM Sans Fonts einbinden
+- [x] Button Komponente bauen – 5 Typen
+- [x] Button Größen – SM, MD, LG, FULL
+- [x] Input Komponente global
+- [x] Card Komponente global
+- [x] Modal Komponente global
+- [x] Toast Benachrichtigung global
+- [x] Spacing System definieren
+- [x] Schatten System definieren
 
 ## Woche 3 – Speisekarte
 - [ ] Supabase Tabellen anlegen – tenants, products, categories

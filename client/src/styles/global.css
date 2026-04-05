@@ -2,66 +2,115 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design Tokens – exakt gemäß CURSOR_PLAN.md (Defaults = tenant_settings)
+ * Primary #CC2A40 · Secondary #183052 · Background #F5EFE4 · Accent #62E6BE
+ */
 :root {
-  /* Hauptfarben Koefteman (Tenant 1) */
+  /* --- Semantische Primärfarben (Plan) --- */
+  --color-primary: #cc2a40;
+  --color-secondary: #183052;
+  --color-background: #f5efe4;
+  --color-accent: #62e6be;
+
+  /* --- Navy --- */
   --color-navy: #183052;
   --color-navy-light: #1e3d6b;
   --color-navy-dark: #0f1f35;
+
+  /* --- Rot / Primary --- */
   --color-red: #cc2a40;
   --color-red-light: #e63350;
   --color-red-dark: #b52236;
+
+  /* --- Mint / Accent --- */
   --color-mint: #62e6be;
   --color-mint-light: #8eefd1;
   --color-mint-dark: #3dd4a8;
+
+  /* --- Cream / Background --- */
   --color-cream: #f5efe4;
   --color-cream-dark: #ede4d4;
   --color-cream-darker: #ddd3c0;
 
-  /* Semantische Farben */
+  /* --- Semantik --- */
   --color-success: #1d9e75;
   --color-warning: #f5a623;
   --color-error: #cc2a40;
 
-  /* Text */
+  /* --- Text --- */
   --color-text-primary: #1a1208;
   --color-text-secondary: #7a6e60;
   --color-text-light: #ffffff;
 
-  /* Hintergründe */
+  /* --- Flächen --- */
   --color-bg-primary: #f5efe4;
   --color-bg-secondary: #fffdf8;
   --color-bg-dark: #183052;
+  --color-border: #ddd3c0;
+  --color-border-focus: #183052;
 
-  /* Spacing */
+  /* --- Fokus (Buttons, Inputs) --- */
+  --color-focus-ring: #183052;
+  --color-focus-ring-offset: #f5efe4;
+
+  /* --- Typografie --- */
+  --font-heading: 'Playfair Display', ui-serif, Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-feature-heading: 'liga' 1, 'kern' 1;
+
+  /* --- Abstand --- */
+  --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
-  --space-lg: 32px;
-  --space-xl: 64px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
 
-  /* Radien */
+  /* --- Ecken --- */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 100px;
 
-  /* Schatten */
+  /* --- Schatten --- */
   --shadow-sm: 0 2px 8px rgba(24, 48, 82, 0.06);
   --shadow-md: 0 8px 24px rgba(24, 48, 82, 0.1);
   --shadow-lg: 0 16px 48px rgba(24, 48, 82, 0.14);
+  --shadow-xl: 0 24px 64px rgba(24, 48, 82, 0.18);
+  --shadow-inner: inset 0 1px 2px rgba(24, 48, 82, 0.06);
 
-  /* Animationen */
-  --transition: all 0.2s ease;
+  /* --- Stacking --- */
+  --z-modal: 1000;
+  --z-toast: 1100;
+
+  /* --- Bewegung --- */
+  --transition-duration: 200ms;
+  --transition-ease: ease;
+  --transition: all var(--transition-duration) var(--transition-ease);
 }
 
-html {
-  color-scheme: light;
-}
+@layer base {
+  html {
+    color-scheme: light;
+  }
 
-body {
-  @apply min-h-screen bg-bg-primary font-body text-text-primary antialiased;
-}
+  body {
+    @apply min-h-screen bg-bg-primary font-body text-text-primary antialiased;
+    font-family: var(--font-body);
+  }
 
-#root {
-  @apply min-h-screen;
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    font-feature-settings: var(--font-feature-heading);
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
 }

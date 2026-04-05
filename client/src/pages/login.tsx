@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useLocation } from 'wouter'
 import { z } from 'zod'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { Button } from '@/components/ui/Button'
+import { Button, Input } from '@/components/ui'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { getPublicSiteUrl } from '@/lib/site'
 import { supabase } from '@/lib/supabase'
@@ -120,21 +120,13 @@ export function LoginPage() {
             Per E-Mail
           </h3>
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <div>
-              <label htmlFor="email" className="mb-1 block text-sm font-medium text-text-primary">
-                E-Mail
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                className="w-full rounded-md border border-brand-cream-darker bg-bg-secondary px-3 py-2 text-text-primary shadow-sm outline-none ring-navy focus:ring-2"
-                {...register('email')}
-              />
-              {errors.email ? (
-                <p className="mt-1 text-sm text-[var(--color-error)]">{errors.email.message}</p>
-              ) : null}
-            </div>
+            <Input
+              label="E-Mail"
+              type="email"
+              autoComplete="email"
+              error={errors.email?.message}
+              {...register('email')}
+            />
             <Button type="submit" size="full" disabled={isSubmitting}>
               {isSubmitting ? 'Senden…' : 'Magic-Link senden'}
             </Button>
