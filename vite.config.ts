@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  // .env liegt im Repo-Root (neben dieser Datei), nicht unter client/
+  envDir: path.resolve(__dirname),
   plugins: [react()],
   root: path.resolve(__dirname, 'client'),
   publicDir: path.resolve(__dirname, 'client/public'),
