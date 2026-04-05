@@ -1,14 +1,36 @@
+# Lekkr – Netlify (Build, Functions, SPA-Fallback, Sicherheits-Header)
+
 [build]
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Funktionen: gemeinsame Umgebung (Secrets im Netlify UI unter Site → Environment)
+# STRIPE_SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, TWILIO_*, HELLOCASH_API_KEY
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
+# SPA (Vite/React Router / wouter): alle Pfade → index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
