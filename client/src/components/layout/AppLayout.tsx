@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'wouter'
 import { Button } from '@/components/ui/Button'
+import { LocaleSwitcher } from '@/components/menu/LocaleSwitcher'
 import { navLinkClass } from '@/components/layout/navStyles'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { useTenant } from '@/hooks/useTenant'
+import { useLocale } from '@/i18n/LocaleProvider'
 
 type AppLayoutProps = {
   children: ReactNode
@@ -12,6 +14,7 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, title }: AppLayoutProps) {
   const tenant = useTenant()
+  const { t } = useLocale()
   const { user, loading, signOut } = useAuthSession()
   const [, navigate] = useLocation()
 
@@ -24,36 +27,39 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               Lekkr
             </Link>
             <p className="text-sm text-text-secondary">
-              Tenant: {tenant.slug}{' '}
+              {tenant.slug}{' '}
               <span className="font-mono text-xs text-text-secondary/80">
                 ({tenant.id.slice(0, 8)}…)
               </span>
             </p>
           </div>
-          <nav className="flex flex-wrap items-center gap-2">
-            <Link href="/menu" className={navLinkClass}>
-              Speisekarte
-            </Link>
-            <Link href="/cart" className={navLinkClass}>
-              Warenkorb
-            </Link>
-            {loading ? (
-              <span className="text-sm text-text-secondary">…</span>
-            ) : user ? (
-              <>
-                <Link href="/profile" className={navLinkClass}>
-                  Profil
-                </Link>
-                <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
-                  Abmelden
+          <div className="flex flex-wrap items-center gap-3">
+            <LocaleSwitcher />
+            <nav className="flex flex-wrap items-center gap-2">
+              <Link href="/menu" className={navLinkClass}>
+                {t('nav.menu')}
+              </Link>
+              <Link href="/cart" className={navLinkClass}>
+                {t('nav.cart')}
+              </Link>
+              {loading ? (
+                <span className="text-sm text-text-secondary">{t('nav.loading')}</span>
+              ) : user ? (
+                <>
+                  <Link href="/profile" className={navLinkClass}>
+                    {t('nav.profile')}
+                  </Link>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
+                    {t('nav.logout')}
+                  </Button>
+                </>
+              ) : (
+                <Button type="button" size="sm" onClick={() => navigate('/login')}>
+                  {t('nav.login')}
                 </Button>
-              </>
-            ) : (
-              <Button type="button" size="sm" onClick={() => navigate('/login')}>
-                Anmelden
-              </Button>
-            )}
-          </nav>
+              )}
+            </nav>
+          </div>
         </div>
       </header>
       {title ? (

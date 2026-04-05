@@ -25,16 +25,16 @@
 - [x] Schatten System definieren
 
 ## Woche 3 – Speisekarte
-- [ ] Supabase Tabellen anlegen – tenants, products, categories
-- [ ] Startseite – Hero, Kategorien, Bestseller
-- [ ] Kategorien Komponente
-- [ ] Produkt-Karte Komponente
-- [ ] Speisekarte Seite – Filter, Kategorien
-- [ ] Produktdetail Seite – Bilder, Beschreibung
-- [ ] Video Player für Produkte
-- [ ] Allergene & Nährwerte Anzeige
-- [ ] Beliebtheits-Anzeige
-- [ ] Mehrsprachigkeit – Deutsch, Türkisch, Englisch
+- [x] Supabase Tabellen anlegen – tenants, products, categories
+- [x] Startseite – Hero, Kategorien, Bestseller
+- [x] Kategorien Komponente
+- [x] Produkt-Karte Komponente
+- [x] Speisekarte Seite – Filter, Kategorien
+- [x] Produktdetail Seite – Bilder, Beschreibung
+- [x] Video Player für Produkte
+- [x] Allergene & Nährwerte Anzeige
+- [x] Beliebtheits-Anzeige
+- [x] Mehrsprachigkeit – Deutsch, Türkisch, Englisch
 
 ## Woche 4 – Warenkorb & Checkout
 - [ ] Warenkorb Supabase Tabelle
