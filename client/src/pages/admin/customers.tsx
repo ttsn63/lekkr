@@ -1,9 +1,9 @@
-import { AppLayout } from '@/components/layout/AppLayout'
+import { AdminPage } from '@/components/admin/AdminPage'
 
 export function AdminCustomersPage() {
   return (
-    <AppLayout title="Admin · Kunden">
-      <p className="text-text-secondary">Platzhalter – Kunden folgen.</p>
-    </AppLayout>
+    <AdminPage title="Kunden">
+      <p className="text-text-secondary">Platzhalter – Kundenliste mit tenant_id-Filter folgt.</p>
+    </AdminPage>
   )
 }

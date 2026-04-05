@@ -51,16 +51,16 @@
 - [x] Bestellbestätigung Seite
 
 ## Woche 5 – Admin Bereich
-- [ ] Supabase Tabellen – orders, order_items, users
-- [ ] Admin Login – nur per Email + Passwort
-- [ ] Admin Dashboard – Umsatz, KPIs
-- [ ] Produkte verwalten – CRUD
-- [ ] Kategorien verwalten
-- [ ] Bulk Import CSV
-- [ ] Bulk Actions – aktivieren, deaktivieren, löschen
-- [ ] Bestellungen live anzeigen
-- [ ] Bestellungen Archiv
-- [ ] Bestellung ablehnen mit Begründung
+- [x] Supabase Tabellen – orders, order_items, users
+- [x] Admin Login – nur per Email + Passwort
+- [x] Admin Dashboard – Umsatz, KPIs
+- [x] Produkte verwalten – CRUD
+- [x] Kategorien verwalten
+- [x] Bulk Import CSV
+- [x] Bulk Actions – aktivieren, deaktivieren, löschen
+- [x] Bestellungen live anzeigen
+- [x] Bestellungen Archiv
+- [x] Bestellung ablehnen mit Begründung
 
 ## Woche 6 – Küche & Fahrer
 - [ ] Supabase Realtime aktivieren

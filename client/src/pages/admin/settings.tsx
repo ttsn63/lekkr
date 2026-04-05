@@ -1,9 +1,9 @@
-import { AppLayout } from '@/components/layout/AppLayout'
+import { AdminPage } from '@/components/admin/AdminPage'
 
 export function AdminSettingsPage() {
   return (
-    <AppLayout title="Admin · Einstellungen">
-      <p className="text-text-secondary">Platzhalter – Einstellungen folgen.</p>
-    </AppLayout>
+    <AdminPage title="Einstellungen">
+      <p className="text-text-secondary">Platzhalter – Shop-Einstellungen (tenant_settings) bearbeiten.</p>
+    </AdminPage>
   )
 }

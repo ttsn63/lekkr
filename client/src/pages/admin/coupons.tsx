@@ -1,9 +1,9 @@
-import { AppLayout } from '@/components/layout/AppLayout'
+import { AdminPage } from '@/components/admin/AdminPage'
 
 export function AdminCouponsPage() {
   return (
-    <AppLayout title="Admin · Coupons">
-      <p className="text-text-secondary">Platzhalter – Coupon-Verwaltung folgt.</p>
-    </AppLayout>
+    <AdminPage title="Coupons">
+      <p className="text-text-secondary">Platzhalter – Coupon-Builder folgt (Woche 7).</p>
+    </AdminPage>
   )
 }

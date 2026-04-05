@@ -1,7 +1,9 @@
 import { Route, Router, Switch } from 'wouter'
+import { AdminCategoriesPage } from '@/pages/admin/categories'
 import { AdminCouponsPage } from '@/pages/admin/coupons'
 import { AdminCustomersPage } from '@/pages/admin/customers'
 import { AdminDashboardPage } from '@/pages/admin/dashboard'
+import { AdminLoginPage } from '@/pages/admin/login'
 import { AdminOrdersPage } from '@/pages/admin/orders'
 import { AdminProductsPage } from '@/pages/admin/products'
 import { AdminSettingsPage } from '@/pages/admin/settings'
@@ -53,8 +55,10 @@ export default function App() {
         <Route path="/profile" component={ProfilePage} />
         <Route path="/orders" component={OrdersPage} />
         <Route path="/login" component={LoginPage} />
+        <Route path="/admin/login" component={AdminLoginPage} />
         <Route path="/admin/dashboard" component={AdminDashboardPage} />
         <Route path="/admin/products" component={AdminProductsPage} />
+        <Route path="/admin/categories" component={AdminCategoriesPage} />
         <Route path="/admin/orders" component={AdminOrdersPage} />
         <Route path="/admin/coupons" component={AdminCouponsPage} />
         <Route path="/admin/customers" component={AdminCustomersPage} />
