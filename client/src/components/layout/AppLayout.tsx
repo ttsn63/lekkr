@@ -68,7 +68,24 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 aria-controls="mobile-site-nav"
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
               >
-                {isMobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+                <span className="sr-only">{isMobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}</span>
+                <span aria-hidden="true" className="relative block h-4 w-5">
+                  <span
+                    className={`absolute left-0 top-0 h-0.5 w-5 bg-navy transition-transform duration-200 ${
+                      isMobileMenuOpen ? 'translate-y-[7px] rotate-45' : ''
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 top-[7px] h-0.5 w-5 bg-navy transition-opacity duration-200 ${
+                      isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 top-[14px] h-0.5 w-5 bg-navy transition-transform duration-200 ${
+                      isMobileMenuOpen ? '-translate-y-[7px] -rotate-45' : ''
+                    }`}
+                  />
+                </span>
               </Button>
             </div>
           </div>
