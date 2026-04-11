@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'wouter'
 import { Button } from '@/components/ui/Button'
 import { LocaleSwitcher } from '@/components/menu/LocaleSwitcher'
-import { navLinkClass } from '@/components/layout/navStyles'
+import { getMobileNavLinkClass, getNavLinkClass } from '@/components/layout/navStyles'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { useTenant } from '@/hooks/useTenant'
 import { useLocale } from '@/i18n/LocaleProvider'
@@ -17,34 +17,72 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const tenant = useTenant()
   const { t } = useLocale()
   const { user, loading, signOut } = useAuthSession()
-  const [, navigate] = useLocation()
+  const [location, navigate] = useLocation()
   const cartCount = useCartStore((s) => s.lines.reduce((a, l) => a + l.quantity, 0))
   const toggleCart = useCartStore((s) => s.toggleSidebar)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location])
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false)
+
+  const isRouteActive = (route: string) => {
+    if (route === '/') return location === '/'
+    return location === route || location.startsWith(`${route}/`)
+  }
+
+  const links = [
+    { href: '/', label: t('nav.home') },
+    { href: '/menu', label: t('nav.menu') },
+    { href: '/coupons', label: t('nav.coupons') },
+  ]
 
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-brand-cream-dark bg-bg-secondary shadow-sm">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-          <div>
+        <div className="mx-auto max-w-5xl px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
             <Link href="/" className="font-heading text-xl font-semibold text-navy">
               Lekkr
             </Link>
             <p className="text-sm text-text-secondary">
               {tenant.slug}{' '}
-              <span className="font-mono text-xs text-text-secondary/80">
+                <span className="hidden font-mono text-xs text-text-secondary/80 sm:inline">
                 ({tenant.id.slice(0, 8)}…)
               </span>
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <LocaleSwitcher />
-            <nav className="flex flex-wrap items-center gap-2">
-              <Link href="/menu" className={navLinkClass}>
-                {t('nav.menu')}
-              </Link>
-              <Link href="/coupons" className={navLinkClass}>
-                {t('nav.coupons')}
-              </Link>
+            <div className="flex items-center gap-2">
+              <div className="hidden md:block">
+                <LocaleSwitcher />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-site-nav"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              >
+                {isMobileMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-4 hidden items-center justify-between gap-3 md:flex">
+            <nav className="flex flex-wrap items-center gap-2" aria-label="Main">
+              {links.map((link) => (
+                <Link key={link.href} href={link.href} className={getNavLinkClass(isRouteActive(link.href))}>
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={toggleCart}>
                 {t('nav.cart')}
                 {cartCount > 0 ? (
@@ -57,7 +95,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 <span className="text-sm text-text-secondary">{t('nav.loading')}</span>
               ) : user ? (
                 <>
-                  <Link href="/profile" className={navLinkClass}>
+                  <Link href="/profile" className={getNavLinkClass(isRouteActive('/profile'))}>
                     {t('nav.profile')}
                   </Link>
                   <Button type="button" variant="ghost" size="sm" onClick={() => void signOut()}>
@@ -69,8 +107,82 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                   {t('nav.login')}
                 </Button>
               )}
-            </nav>
+            </div>
           </div>
+
+          {isMobileMenuOpen ? (
+            <div id="mobile-site-nav" className="mt-4 border-t border-brand-cream-dark pt-4 md:hidden">
+              <div className="mb-3">
+                <LocaleSwitcher />
+              </div>
+              <nav className="flex flex-col gap-2" aria-label="Mobile">
+                {links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={getMobileNavLinkClass(isRouteActive(link.href))}
+                    onClick={closeMobileMenu}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-between"
+                  onClick={() => {
+                    toggleCart()
+                    closeMobileMenu()
+                  }}
+                >
+                  <span>{t('nav.cart')}</span>
+                  {cartCount > 0 ? (
+                    <span className="rounded-full bg-brand-red px-ds-xs py-ds-2xs text-ds-xs text-text-light">
+                      {cartCount}
+                    </span>
+                  ) : null}
+                </Button>
+                {loading ? (
+                  <span className="px-3 py-2 text-sm text-text-secondary">{t('nav.loading')}</span>
+                ) : user ? (
+                  <>
+                    <Link
+                      href="/profile"
+                      className={getMobileNavLinkClass(isRouteActive('/profile'))}
+                      onClick={closeMobileMenu}
+                    >
+                      {t('nav.profile')}
+                    </Link>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        void signOut()
+                        closeMobileMenu()
+                      }}
+                    >
+                      {t('nav.logout')}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full justify-center"
+                    onClick={() => {
+                      navigate('/login')
+                      closeMobileMenu()
+                    }}
+                  >
+                    {t('nav.login')}
+                  </Button>
+                )}
+              </nav>
+            </div>
+          ) : null}
         </div>
       </header>
       {title ? (
