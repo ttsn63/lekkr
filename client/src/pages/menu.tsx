@@ -72,7 +72,7 @@ export function MenuPage() {
         ) : filtered.length === 0 ? (
           <p className="text-text-secondary">{t('menu.empty')}</p>
         ) : (
-          <ul className="grid gap-ds-lg sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-2 gap-ds-md sm:gap-ds-lg">
             {filtered.map((p) => (
               <li key={p.id}>
                 <ProductCard product={p} />
