@@ -13,7 +13,8 @@ export function MenuPage() {
   const tenant = useTenant()
   const { t, locale } = useLocale()
   const search = useSearch()
-  const [, navigate] = useLocation()
+  const [location, navigate] = useLocation()
+  const isHomepage = location === '/'
 
   const categoryFromUrl = useMemo(() => new URLSearchParams(search).get('category'), [search])
 
@@ -39,7 +40,7 @@ export function MenuPage() {
   }, [products, categoryFromUrl, searchText, locale])
 
   return (
-    <AppLayout title={t('menu.title')}>
+    <AppLayout title={isHomepage ? undefined : t('menu.title')} mainClassName={isHomepage ? 'pt-0' : undefined}>
       <div className="space-y-ds-xl">
         {error ? (
           <p className="rounded-md bg-brand-red/10 px-ds-md py-ds-sm text-ds-sm text-[color:var(--color-error)]">

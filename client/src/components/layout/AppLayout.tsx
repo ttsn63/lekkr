@@ -11,9 +11,10 @@ import { useCartStore } from '@/store/cartStore'
 type AppLayoutProps = {
   children: ReactNode
   title?: string
+  mainClassName?: string
 }
 
-export function AppLayout({ children, title }: AppLayoutProps) {
+export function AppLayout({ children, title, mainClassName = '' }: AppLayoutProps) {
   const tenant = useTenant()
   const { t } = useLocale()
   const { user, loading, signOut } = useAuthSession()
@@ -209,7 +210,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
           </div>
         </div>
       ) : null}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+      <main className={`mx-auto w-full max-w-5xl flex-1 px-4 py-8 ${mainClassName}`}>{children}</main>
       <footer className="mt-auto border-t border-brand-cream-dark bg-bg-secondary py-6 text-center text-sm text-text-secondary">
         <div className="mx-auto flex max-w-5xl flex-wrap justify-center gap-x-4 gap-y-2 px-4">
           <Link href="/impressum" className="underline hover:text-navy">
