@@ -13,7 +13,7 @@ type Dict = Record<string, string>
 const de: Dict = {
   'nav.menu': 'Speisekarte',
   'nav.coupons': 'Coupons',
-  'nav.home': 'Start',
+  'nav.home': 'Deals',
   'nav.cart': 'Warenkorb',
   'nav.profile': 'Profil',
   'nav.login': 'Anmelden',
@@ -138,7 +138,7 @@ const de: Dict = {
 const tr: Dict = {
   'nav.menu': 'Menü',
   'nav.coupons': 'Kuponlar',
-  'nav.home': 'Ana sayfa',
+  'nav.home': 'Deals',
   'nav.cart': 'Sepet',
   'nav.profile': 'Profil',
   'nav.login': 'Giriş',
@@ -263,7 +263,7 @@ const tr: Dict = {
 const en: Dict = {
   'nav.menu': 'Menu',
   'nav.coupons': 'Coupons',
-  'nav.home': 'Home',
+  'nav.home': 'Deals',
   'nav.cart': 'Cart',
   'nav.profile': 'Profile',
   'nav.login': 'Sign in',
