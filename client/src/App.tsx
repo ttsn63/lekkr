@@ -15,7 +15,6 @@ import { ConfirmationPage } from '@/pages/confirmation'
 import { CouponsPage } from '@/pages/coupons'
 import { DriverPage } from '@/pages/driver'
 import { InvitePage } from '@/pages/invite'
-import { IndexPage } from '@/pages/index'
 import { KitchenPage } from '@/pages/kitchen'
 import { LoginPage } from '@/pages/login'
 import { MenuPage } from '@/pages/menu'
@@ -67,7 +66,7 @@ export default function App() {
       <CookieBanner />
       <Router>
       <Switch>
-        <Route path="/" component={IndexPage} />
+        <Route path="/" component={MenuPage} />
         <Route path="/menu" component={MenuPage} />
         <Route path="/product/:id" component={ProductPage} />
         <Route path="/cart" component={CartPage} />

@@ -44,20 +44,3 @@ export async function fetchProductById(
   if (error) throw error
   return (data as ProductRow | null) ?? null
 }
-
-export async function fetchBestsellerProducts(
-  tenantId: string,
-  limit = 6,
-): Promise<ProductRow[]> {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .eq('active', true)
-    .order('is_featured', { ascending: false })
-    .order('popularity_count', { ascending: false })
-    .limit(limit)
-
-  if (error) throw error
-  return (data ?? []) as ProductRow[]
-}
