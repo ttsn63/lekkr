@@ -1,6 +1,5 @@
 import { AppLayout } from '@/components/layout/AppLayout'
 import { CategoryStrip } from '@/components/home/CategoryStrip'
-import { HomeHero } from '@/components/home/HomeHero'
 import { ProductCard } from '@/components/menu/ProductCard'
 import { useBestsellersQuery, useCategoriesQuery } from '@/hooks/useCatalogQueries'
 import { useTenant } from '@/hooks/useTenant'
@@ -15,8 +14,6 @@ export function IndexPage() {
   return (
     <AppLayout>
       <div className="space-y-ds-3xl">
-        <HomeHero />
-
         {catLoading ? (
           <p className="text-text-secondary">{t('nav.loading')}</p>
         ) : (
