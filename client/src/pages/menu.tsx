@@ -74,7 +74,7 @@ export function MenuPage() {
         ) : (
           <ul className="grid grid-cols-2 gap-ds-md sm:gap-ds-lg">
             {filtered.map((p) => (
-              <li key={p.id}>
+              <li key={p.id} className="h-full">
                 <ProductCard product={p} />
               </li>
             ))}
