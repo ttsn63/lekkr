@@ -57,6 +57,20 @@ export function AppLayout({ children, title, mainClassName = '' }: AppLayoutProp
             </p>
           </div>
             <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={toggleCart}
+              >
+                {t('nav.cart')}
+                {cartCount > 0 ? (
+                  <span className="ml-1 rounded-full bg-brand-red px-ds-xs py-ds-2xs text-ds-xs text-text-light">
+                    {cartCount}
+                  </span>
+                ) : null}
+              </Button>
               <div className="hidden md:block">
                 <LocaleSwitcher />
               </div>
@@ -144,23 +158,6 @@ export function AppLayout({ children, title, mainClassName = '' }: AppLayoutProp
                     {link.label}
                   </Link>
                 ))}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-between"
-                  onClick={() => {
-                    toggleCart()
-                    closeMobileMenu()
-                  }}
-                >
-                  <span>{t('nav.cart')}</span>
-                  {cartCount > 0 ? (
-                    <span className="rounded-full bg-brand-red px-ds-xs py-ds-2xs text-ds-xs text-text-light">
-                      {cartCount}
-                    </span>
-                  ) : null}
-                </Button>
                 {loading ? (
                   <span className="px-3 py-2 text-sm text-text-secondary">{t('nav.loading')}</span>
                 ) : user ? (
